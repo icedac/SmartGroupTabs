@@ -175,9 +175,12 @@ function groupTab(tab, currentWindow) {
         if (tab.url == "" || tab.pinned) {
             resolve();
             return;
-        }
-        chrome.tabGroups.query({ windowId: currentWindow.id }, function (groups) {
-            groupTabIntl(tab, groups, currentWindow, resolve);
+        }        
+        // get window from tab
+        var currentWindow = chrome.windows.get(tab.windowId, { populate: true }, function (currentWindow) {
+            chrome.tabGroups.query({ windowId: tab.windowId }, function (groups) {
+                groupTabIntl(tab, groups, currentWindow, resolve);
+            });
         });
     });
 }
@@ -217,7 +220,7 @@ function groupTabIntl(tab, groups, currentWindow, resolve) {
                         color: colors[parseInt(Math.random() * 10)],
                         title: groupName,
                     }, function (group) {
-                    console.debug("group added", group.title);
+                    console.debug("group added", groupName);
                     resolve(); // Resolve here after group has been added
                 });
             })
