@@ -1,14 +1,14 @@
-# Smart Grouping Tags
+# Smart Grouping Tabs
 
 This project forked from [AutoGroupTabs](https://github.com/abevol/AutoGroupTabs) by [abevol](https://github.com/abevol).
 
-Simple and easy to use extension for automatically grouping tags with rules based, when you force to do it or create a new tab and open a page.
+Simple and easy to use extension for automatically grouping tabs with rules based, when you force to do it or create a new tab and open a page.
 
-![Demo](./readme/demo.gif)
+![Demo](./readme/demo-640.gif)
 
 ## Features
 
-1. Automatically group tags into different tag groups based on rules when you open a new page.
+1. Automatically group tabs into different tab groups based on rules when you open a new page.
 2. Once installed, it will automatically group existing tabs.
 3. Whenever a new tab is opened, it will be automatically grouped.
 4. You can force grouping all tabs by clicking the extension icon.
