@@ -106,11 +106,25 @@ function genGroupName(url) {
         }
     }
 
+    let skipDefaltPage = options && options.groupingDefault != undefined && options.groupingDefault == false;
+
     if (url.protocol !== "http:" && url.protocol !== "https:") {
-        return url.protocol.substr(0, url.protocol.length - 1);
+        // if (url == "chrome://newtab/") {
+        // split protocol and name
+        let protocol = url.protocol.substr(0, url.protocol.length - 1);
+        let name = url.href.substr(protocol.length + 3);
+        // remove trailing slash from name
+        if (name.endsWith("/")) {
+            name = name.substr(0, name.length - 1);
+        }
+        console.log("protocol:", protocol, "name:", name);
+        if (skipDefaltPage && name == "newtab") {
+            return "";
+        }
+        return protocol;
     }
 
-    if (options && options.groupingDefault != undefined && options.groupingDefault == false) {
+    if (skipDefaltPage) {
         return "";
     }
 
