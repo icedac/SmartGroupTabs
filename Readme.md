@@ -1,31 +1,31 @@
-# 标签自动分组
+# Auto-Grouping Tags
 
- 简单易用的标签自动分组扩展，不需要进行任何设置！
+Simple and easy to use extension for automatically grouping tags, no settings required!
 
-## 功能
+## Features
 
-1. 根据域名将标签自动分到不同的标签组。
-2. 安装后会对已有的标签页自动进行分组。
-3. 每当打开新标签页会自动对其进行分组。
+1. Automatically group tags into different tag groups based on domain.
+2. Once installed, it will automatically group existing tabs.
+3. Whenever a new tab is opened, it will be automatically grouped.
 
-## 使用
+## Usage
 
-1. 建议打开 Edge 浏览器的垂直标签页模式，以获得更好的使用体验，快捷键 Ctrl + Shift + ,（逗号）。
-2. 通过 Microsoft Edge 扩展商店安装：[标签页自动分组](https://microsoftedge.microsoft.com/addons/detail/%E6%A0%87%E7%AD%BE%E8%87%AA%E5%8A%A8%E5%88%86%E7%BB%84/bdaeagodnmaojfpnghgopoajbclkhnaf)
-3. 或者通过 [Github](https://github.com/abevol/AutoGroupTabs) 下载此项目源码。
-   打开扩展页面的 开发人员模式。
-   选择加载解压缩的扩展。
+1. It is recommended to turn on the vertical tab mode of the Edge browser for a better user experience. The shortcut key is Ctrl + Shift + , (comma).
+2. Install through the Microsoft Edge extension store: [AutoGroupTabs](https://microsoftedge.microsoft.com/addons/detail/%E6%A0%87%E7%AD%BE%E8%87%AA%E5%8A%A8%E5%88%86%E7%BB%84/bdaeagodnmaojfpnghgopoajbclkhnaf)
+3. Or download the source code of this project through [Github](https://github.com/abevol/AutoGroupTabs).
+   Open the developer mode of the extension page.
+   Choose to load the uncompressed extension.
 
-## 效果图
+## Demonstration
 
-![效果图片](./readme/main.jpg)
+![Demo image](./readme/main.jpg)
 
-## 更新日志
+## Changelog
 
-### 2022.08.26
+### August 26, 2022
 
-初始版本
+Initial version
 
-## 源码
+## Source Code
 
  <https://github.com/abevol/AutoGroupTabs>
