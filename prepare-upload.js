@@ -30,6 +30,13 @@ files = files.filter(file => {
 output.on('close', function() {
   console.log(archive.pointer() + ' total bytes');
   console.log('archiver has been finalized and the output file descriptor has closed.');
+  
+  // Instructions for upload
+  console.log("\nNavigate to https://partner.microsoft.com/en-us/dashboard/microsoftedge/");
+  console.log("Login if needed, then select your extension, and upload the new package (Extension-" + gitHash + ".zip)");
+
+  console.log("\nNavigate to https://chrome.google.com/webstore/developer/dashboard");
+  console.log("Login if needed, then select your extension, and upload the new package (Extension-" + gitHash + ".zip)");
 });
 
 archive.on('error', function(err) {
