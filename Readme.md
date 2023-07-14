@@ -13,3 +13,43 @@ Simple and easy to use extension for automatically grouping tags with rules base
 ## Demonstration
 
 ![Demo image](./readme/main.png)
+
+
+## Config
+
+Default rules are following.
+
+```
+{
+  "groupingDefault": false,
+  "rules": [
+    {
+      "name": "work",
+      "hosts": [
+        "*.github.com",
+        "*.atlassian.net"
+      ]
+    },
+    {
+      "name": "document",
+      "hosts": [
+        "*.openai.com",
+        "*.learn.microsoft.com"
+      ]
+    },
+    {
+      "name": "ask",
+      "hosts": [
+        "*.openai.com"
+      ]
+    }
+  ]
+}
+```
+
+- `groupingDefault`
+  - If true, all tabs will be grouped by rules and if the rules not found then it will group by hostname.
+  - If false, all tabs will be grouped by rules but do not group if no matching rules found.
+- `rules`
+  - `name`: Name of the group displayed in the tab name
+  - `hosts`: Hostname of the tab to be grouped.
