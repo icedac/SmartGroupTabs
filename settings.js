@@ -2,6 +2,20 @@ document.addEventListener('DOMContentLoaded', function() {
     var form = document.getElementById('settingsForm');
     var rulesInput = document.getElementById('rules');
 
+    // Regroup Now button
+    var regroupButton = document.getElementById('regroupButton');
+    regroupButton.addEventListener('click', function() {
+        var confirmation = confirm('Are you sure you want to regroup now?');
+        if (confirmation) {
+            chrome.windows.getCurrent({}, function(window) {
+                // Send the window ID along with the action in the message
+                chrome.runtime.sendMessage({ action: 'regroupTabs', windowId: window.id }, function(response) {
+                    // Handle the response from background.js, if needed
+                });
+            });
+        }
+    });
+    
     function loadRules() {
         // Load the rules from storage and set the input value
         chrome.storage.sync.get('options', function (data) {

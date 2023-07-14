@@ -12,6 +12,19 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
     }
 });
 
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+    if (request.action === 'regroupTabs') {
+        // Use the window ID from the message to get the window
+        chrome.windows.get(request.windowId, { populate: true }, function(window) {
+            // Now window is the window from which the message was sent
+            console.log(window);
+            // Call groupAllTabs with the window object
+            groupAllTabs(window);
+        });
+        sendResponse({ message: 'Tabs regrouped' });
+    }
+});
+
 
 const colors = ["grey", "blue", "yellow", "red", "green", "pink", "purple", "cyan"]
 const defaultRules = [
@@ -133,52 +146,61 @@ function genGroupName(url) {
     return groupName;
 }
 
-let tabIdx = 0;
-let allTabs = [];
 
-function onGroupTabComplete() {
-    tabIdx++;
-    if (tabIdx < allTabs.length) {
-        let tab = allTabs[tabIdx];
-        groupTab(tab, onGroupTabComplete);
-    }
-}
-
-function groupAllTabs() {
+async function groupAllTabs(currentWindow) {
     console.debug("groupAllTabs");
-    chrome.tabs.query(
-        {
-            currentWindow: true
-        }, function (tabs) {
-        tabIdx = 0;
-        allTabs = tabs;
-        groupTab(allTabs[tabIdx], onGroupTabComplete);
-    });
-}
-
-function groupTab(tab, complete) {
-    if (tab.url == "" || tab.pinned) {
-        complete && complete();
-        return;
+    if (currentWindow == undefined) {
+        const windowAndTabs = await new Promise(resolve => {
+            chrome.windows.getCurrent({ populate: true }, (currentWindow) => {
+                resolve({currentWindow: currentWindow, tabs: currentWindow.tabs});
+            });
+        });
+        tabs = windowAndTabs.tabs;
+        currentWindow = windowAndTabs.currentWindow;
+        
+        for (let i = 0; i < tabs.length; i++) {
+            await groupTab(tabs[i], currentWindow);
+        }
     }
-
-    chrome.windows.getCurrent(function (currentWindow) {
-        chrome.tabGroups.query(
-            {
-                windowId: currentWindow.id
-            }, function (groups) {
-            groupTabIntl(tab, groups, currentWindow, complete);
-        })
-    });
+    else {
+        tabs = currentWindow.tabs;
+        for (let i = 0; i < tabs.length; i++) {
+            await groupTab(tabs[i], currentWindow);
+        }
+    }
 }
 
-function groupTabIntl(tab, groups, currentWindow, complete) {
-    try {
-        let groupName = genGroupName(tab.url);
-        if ( groupName == undefined || groupName == "") {
-            // do nothing
+function groupTab(tab, currentWindow) {
+    return new Promise((resolve) => {
+        if (tab.url == "" || tab.pinned) {
+            resolve();
             return;
         }
+        chrome.tabGroups.query({ windowId: currentWindow.id }, function (groups) {
+            groupTabIntl(tab, groups, currentWindow, resolve);
+        });
+    });
+}
+
+function groupTabIntl(tab, groups, currentWindow, resolve) {
+    try {
+        let groupName = genGroupName(tab.url);
+        console.log("group name:", groupName, "url:", tab.url)
+        if (groupName == undefined || groupName == "") {
+            // Resolve here as there's nothing to do
+            resolve();
+            return;
+        }
+
+        // If the tab already belongs to a group, don't re-group it
+        if (tab.groupId && tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
+            resolve();
+            return;
+        }
+
+        // log groups only with name, id
+        console.debug("groups:", groups.map(a => { return { title: a.title, id: a.id } }));
+
         const existedGroup = groups.find(a => a.title == groupName);
         if (existedGroup == undefined) {
             chrome.tabs.group(
@@ -196,23 +218,24 @@ function groupTabIntl(tab, groups, currentWindow, complete) {
                         title: groupName,
                     }, function (group) {
                     console.debug("group added", group.title);
-                    complete && complete();
+                    resolve(); // Resolve here after group has been added
                 });
             })
         }
         else {
-            console.debug("update group", groupName);
+            console.debug("update group", groupName, "existedGroup.id:", existedGroup.id, "tab.id:", tab.id);
             chrome.tabs.group(
                 {
                     groupId: existedGroup.id,
                     tabIds: tab.id
                 }, function (groupId) {
-                console.debug("group updated", groupName);
-                complete && complete();
+                console.debug("group updated", groupName, "groupId:", groupId);
+                resolve(); // Resolve here after group has been updated
             })
         }
     }
     catch (e) {
         console.error(e)
+        resolve(); // Even if there's an error, we should resolve so the loop can continue
     }
 }
