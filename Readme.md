@@ -12,4 +12,4 @@ Simple and easy to use extension for automatically grouping tags with rules base
 
 ## Demonstration
 
-![Demo image](./readme/main.jpg)
+![Demo image](./readme/main.png)
