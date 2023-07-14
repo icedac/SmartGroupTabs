@@ -1,8 +1,8 @@
 {
     "appName": {
-        "message": "Auto Group Tabs"
+        "message": "Smart Group Tabs"
     },
     "extDesc": {
-        "message": "Automatically group browser tabs into different tab groups based on domain."
+        "message": "Automatically group browser tabs into different tab groups based on smart rules."
     }
 }

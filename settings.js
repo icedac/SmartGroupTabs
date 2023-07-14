@@ -4,9 +4,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function loadRules() {
         // Load the rules from storage and set the input value
-        chrome.storage.sync.get('rules', function(data) {
-            if (data.rules) {
-                rulesInput.value = data.rules.join('\n');
+        chrome.storage.sync.get('options', function (data) {
+            if (data) {
+                rulesInput.value = data.options;
             }
         });
     }
@@ -18,21 +18,9 @@ document.addEventListener('DOMContentLoaded', function() {
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
-        var rules = rulesInput.value.split('\n').map(function(rule) {
-            return rule.trim();
-        }).filter(function(rule) {
-            return rule.length > 0;
-        });
-
-        chrome.storage.sync.set({rules: rules}, function() {
+        chrome.storage.sync.set({options: rulesInput.value}, function() {
             // Reload the rules after they are saved
             loadRules();
         });
     });
 });
-
-
-
-
-
-
