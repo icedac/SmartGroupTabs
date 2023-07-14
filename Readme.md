@@ -56,3 +56,10 @@ Default rules are following.
 - `rules`
   - `name`: Name of the group displayed in the tab name
   - `hosts`: Hostname of the tab to be grouped.
+
+## Idea to improve
+
+- [ ] Export user history and make chatgpt prompt to generate rules
+- [ ] Add rules matching by URL path
+- [ ] Bump button to trash all tabs in a group if marked as trash
+
