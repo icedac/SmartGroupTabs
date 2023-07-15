@@ -26,6 +26,20 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
         });
         sendResponse({ success: true, message: 'Tabs cleaned up' });
     }
+    else if (request.action === 'ungroupTabs') {
+        // Use the window ID from the message to get the window
+        chrome.windows.get(request.windowId, { populate: true }, async function (window) {
+            ungroupTabs(window);
+        });
+        sendResponse({ success: true, message: 'Tabs ungrouped' });
+    }
+    else if (request.action === 'orderTabs') {
+        // Use the window ID from the message to get the window
+        chrome.windows.get(request.windowId, { populate: true }, async function (window) {
+            orderTabs(window);
+        });
+        sendResponse({ success: true, message: 'Tabs ordered' });
+    }
 });
 
 const colors = ["grey", "blue", "yellow", "red", "green", "pink", "purple", "cyan", "orange"]
@@ -281,4 +295,11 @@ async function cleanupTabs(currentWindow) {
     }
 
     await orderTabs(currentWindow);
+}
+
+async function ungroupTabs(currentWindow) {
+    console.debug("ungroupTabs");
+    if (currentWindow == undefined) currentWindow = await chrome.windows.getCurrent({ populate: true });
+    tabs = currentWindow.tabs;
+    await chrome.tabs.ungroup(tabs.map(t => t.id));
 }
