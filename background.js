@@ -14,17 +14,25 @@ chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.action === 'regroupTabs') {
-        // Use the window ID from the message to get the window
         chrome.windows.get(request.windowId, { populate: true }, function (window) {
-            // Call groupAllTabs with the window object
             groupAllTabs(window);
         });
-        sendResponse({ message: 'Tabs regrouped' });
+        sendResponse({ success: true, message: 'Tabs regrouped' });
+    }
+    else if (request.action === 'cleanupTabs') {
+        // Use the window ID from the message to get the window
+        chrome.windows.get(request.windowId, { populate: true }, async function (window) {
+            cleanupTabs(window);
+        });
+        sendResponse({ success: true, message: 'Tabs cleaned up' });
     }
 });
 
+const colors = ["grey", "blue", "yellow", "red", "green", "pink", "purple", "cyan", "orange"]
+function randomeColor() {
+    return colors[parseInt(Math.random() * colors.length)]
+}
 
-const colors = ["grey", "blue", "yellow", "red", "green", "pink", "purple", "cyan"]
 const defaultRules = [
     {
         name: 'work',
@@ -43,6 +51,15 @@ const defaultRules = [
     , {
         name: 'ask',
         hosts: ['*.openai.com']
+    }
+    , {
+        name: 'wasting time',
+        color: "grey",
+        cleanTabs: true,
+        hosts: [
+            '*.netflix.com'
+            , '*.reddit.com'
+        ]
     }
 ];
 
@@ -165,6 +182,12 @@ async function groupTab(tab) {
     await groupTabIntl(tab, groups, currentWindow);
 }
 
+
+function isTabUngrouped(tab) {
+    if (tab.groupId && tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) return false;
+    return true;
+}
+
 async function groupTabIntl(tab, groups, currentWindow) {
     try {
         let groupName = genGroupName(tab.url);
@@ -174,14 +197,13 @@ async function groupTabIntl(tab, groups, currentWindow) {
         }
 
         // If the tab already belongs to a group, don't re-group it
-        if (tab.groupId && tab.groupId !== chrome.tabGroups.TAB_GROUP_ID_NONE) {
-            return;
-        }
+        if (!isTabUngrouped(tab)) return;
 
         // log groups only with name, id
         console.debug("groups:", groups.map(a => { return { title: a.title, id: a.id } }));
 
         const existedGroup = groups.find(a => a.title == groupName);
+        const rule = rules.find(a => a.name == groupName);
         if (existedGroup == undefined) {
             // create group
             const createdGroupId = await chrome.tabs.group({
@@ -190,9 +212,11 @@ async function groupTabIntl(tab, groups, currentWindow) {
                 },
                 tabIds: tab.id
             });
+            let color = randomeColor();
+            if (rule != undefined &&  rule.color != undefined) color = rule.color;
 
             await chrome.tabGroups.update(createdGroupId, {
-                color: colors[parseInt(Math.random() * 10)],
+                color: color,
                 title: groupName,
             });
         }
@@ -208,4 +232,53 @@ async function groupTabIntl(tab, groups, currentWindow) {
     catch (e) {
         console.error(e)
     }
+}
+
+function ungroupedAndNotPinned(tab) {
+    return isTabUngrouped(tab) && !tab.pinned;
+}
+
+// order ungrouped tab to after group, keep the current relative order
+async function orderTabs(currentWindow) {
+    console.debug("orderTabs");
+    if (currentWindow == undefined) currentWindow = await chrome.windows.getCurrent({ populate: true });
+    tabs = currentWindow.tabs;
+
+    let ungroupedTabs = tabs.filter(ungroupedAndNotPinned);
+    console.debug( ungroupedTabs.map( t => t.title ) );
+    console.debug( ungroupedTabs );
+
+    // Check if there are any ungrouped tabs
+    if(ungroupedTabs.length > 0){
+        // Get the index of the last tab in the window
+        let lastIndex = tabs[tabs.length - 1].index;
+
+        // Move all ungrouped tabs to the end of the window
+        chrome.tabs.move( ungroupedTabs.map( t => t.id ), {index: lastIndex + 1});
+    }
+}
+
+async function cleanupTabs(currentWindow) {
+    console.debug("cleanupTabs");
+    const tabGroups = await chrome.tabGroups.query({ windowId: currentWindow.id });
+    // find rule with groupName
+    for (let i = 0; i < tabGroups.length; i++) {
+        // const existedGroup = groups.find(a => a.title == groupName);
+        const tabGroup = tabGroups[i];
+        const groupName = tabGroup.title;
+        const rule = rules.find(a => a.name == groupName);
+        console.debug("tabGroup:", tabGroup, "groupName:", groupName, "rule:", rule);
+        if (rule != undefined && rule.cleanTabs != undefined && rule.cleanTabs == true) {
+            console.debug("remove group", groupName, "tabGroup.id:", tabGroup.id);
+            // remove all tabs from group
+            const tabs = await chrome.tabs.query({ groupId: tabGroup.id });
+            for (let j = 0; j < tabs.length; j++) {
+                const tab = tabs[j];
+                console.debug( "    - remove tab", tab.url, "tab.id:", tab.id);
+                chrome.tabs.remove(tab.id);
+            }
+        }
+    }
+
+    await orderTabs(currentWindow);
 }
